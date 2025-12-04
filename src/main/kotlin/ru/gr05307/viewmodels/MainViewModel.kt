@@ -11,11 +11,9 @@ import androidx.compose.ui.graphics.asSkiaBitmap
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
@@ -30,7 +28,6 @@ import java.util.Date
 import java.util.UUID
 import kotlin.math.pow
 import ru.gr05307.ExportFractal.FractalExporter
-import javax.swing.undo.UndoManager
 import ru.gr05307.rollback.UndoManager
 
 class MainViewModel {
@@ -61,7 +58,7 @@ class MainViewModel {
         val yMax: Double,
         val timestamp: Long = System.currentTimeMillis()
     ) {
-        override fun toString(): String {
+    override fun toString(): String {
             return "$name: X[$xMin, $xMax], Y[$yMin, $yMax]"
         }
     }
@@ -124,12 +121,6 @@ class MainViewModel {
         }
     }
 
-    /** Обновление выделяемой области */
-    fun onSelecting(offset: Offset) {
-        if (!isTourPlaying)
-            selectionSize = Size(selectionSize.width + offset.x, selectionSize.height + offset.y)
-    }
-
     /** Завершение выделения и масштабирование */
     fun onStopSelecting() {
         if (selectionSize.width == 0f || selectionSize.height == 0f) return
@@ -167,6 +158,12 @@ class MainViewModel {
         }
     }
 
+    /** Обновление выделяемой области */
+    fun onSelecting(offset: Offset) {
+        if (!isTourPlaying)
+            selectionSize = Size(selectionSize.width + offset.x, selectionSize.height + offset.y)
+    }
+
     // Tour functions
     fun addCurrentViewAsKeyframe(name: String = "Frame ${tourKeyframes.size + 1}") {
         tourKeyframes.add(
@@ -192,6 +189,7 @@ class MainViewModel {
         mustRepaint = true
     }
 
+    /*
     fun updateKeyframe(keyframeId: String, newName: String? = null) {
         val index = tourKeyframes.indexOfFirst { it.id == keyframeId }
         if (index != -1) {
@@ -201,6 +199,7 @@ class MainViewModel {
             )
         }
     }
+     */
 
     fun startTour() {
         if (tourKeyframes.size < 2) return
@@ -211,8 +210,8 @@ class MainViewModel {
         currentTourFrame = 0
         tourProgress = 0f
 
-        // calculate the total frames (i.e 3 seconds per keyframe at 60fps)
-        val fps = 60
+        // calculate the total frames (i.e 3 seconds per keyframe at 144fps)
+        val fps = 144
         val secondPerKeyframe = 3.0
         totalTourFrames = ((tourKeyframes.size - 1) * secondPerKeyframe * fps).toInt()
 
@@ -332,4 +331,3 @@ class MainViewModel {
         exporter.saveJPG(path)
     }
 }
-
