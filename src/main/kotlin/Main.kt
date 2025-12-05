@@ -92,6 +92,10 @@ fun App(viewModel: MainViewModel = MainViewModel()) {
 }
 
 fun main(): Unit = application {
+
+    var juliaPoints by remember { mutableStateOf<List<Complex>>(emptyList()) }
+
+    // Главное окно
     Window(
         onCloseRequest = ::exitApplication,
         title = "Фрактал - 2025 (гр. 05-307)"
