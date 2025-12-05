@@ -14,11 +14,25 @@ import androidx.compose.ui.window.application
 import ru.gr05307.ui.PaintPanel
 import ru.gr05307.ui.SelectionPanel
 import ru.gr05307.viewmodels.MainViewModel
+
+// Добавления от Артёма
 import androidx.compose.runtime.*
+import ru.gr05307.julia.JuliaPanel
 // Добавления от Артёма
 import ru.gr05307.julia.JuliaWindow
 import ru.gr05307.math.Complex
+import androidx.compose.animation.*
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.*
+import androidx.compose.material.*
+import androidx.compose.ui.graphics.Color
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
+// Конец
 
+// Полностью добавленный код от Артема
 class JuliaViewModelWrapper(
     private val baseViewModel: MainViewModel,
     private val onJuliaPointSelected: (Complex) -> Unit
@@ -45,6 +59,9 @@ class JuliaViewModelWrapper(
         onJuliaPointSelected(Complex(re, im))
     }
 }
+// Конец блока
+
+// Весь App переехал в main()
 
 @Composable
 @Preview
@@ -104,5 +121,4 @@ fun main(): Unit = application {
     }
 }
 
-// Test
 
