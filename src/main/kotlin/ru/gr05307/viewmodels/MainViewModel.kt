@@ -80,8 +80,13 @@ class MainViewModel {
     var totalTourFrames by mutableStateOf(0)
     var tourProgress by mutableStateOf(0f)
     var showTourControls by mutableStateOf(false)
+    var isMenuOpened by mutableStateOf(false)
     private var tourJob: Job? = null
     private val coroutineScope = CoroutineScope(Dispatchers.Default + SupervisorJob())
+
+
+    // track the highest frame number used
+    private var frameCounter = 1
 
     data class TourKeyframe(
         val id: String = UUID.randomUUID().toString(),
@@ -90,10 +95,11 @@ class MainViewModel {
         val xMax: Double,
         val yMin: Double,
         val yMax: Double,
+        val frameNumber: Int,
         val timestamp: Long = System.currentTimeMillis()
     ) {
         override fun toString(): String {
-            return "$name: X[$xMin, $xMax], Y[$yMin, $yMax]"
+            return "$name (Frame #$frameNumber): X[$xMin, $xMax], Y[$yMin, $yMax]"
         }
     }
 
@@ -201,20 +207,72 @@ class MainViewModel {
     }
 
     // Tour functions
-    fun addCurrentViewAsKeyframe(name: String = "Frame ${tourKeyframes.size + 1}") {
+    //Add current view as a keyframe with sequential numbering
+    fun addCurrentViewAsKeyframe(name: String? = null) {
+        // Get the next available frame number
+        val nextFrameNumber = getNextFrameNumber()
+        val frameName = name ?: "Frame #$nextFrameNumber"
+
         tourKeyframes.add(
             TourKeyframe(
-                name = name,
+                name = frameName,
                 xMin = plain.xMin,
                 xMax = plain.xMax,
                 yMin = plain.yMin,
-                yMax = plain.yMax
+                yMax = plain.yMax,
+                frameNumber = nextFrameNumber
             )
         )
+
+        // Update the frame counter
+        frameCounter = maxOf(frameCounter, nextFrameNumber + 1)
+
+        // Reorder frames by frame number to maintain order
+        reorderFramesByNumber()
+    }
+
+
+    private fun getNextFrameNumber(): Int {
+        if (tourKeyframes.isEmpty()) {
+            return 1
+        }
+
+        // Find gaps in frame numbers
+        val existingNumbers = tourKeyframes.map { it.frameNumber }.sorted()
+
+        // Check for gaps starting from 1
+        for (i in 1..existingNumbers.size + 1) {
+            if (!existingNumbers.contains(i)) {
+                return i
+            }
+        }
+
+        // If no gaps, return next sequential number
+        return (existingNumbers.maxOrNull() ?: 0) + 1
+    }
+
+     //Reorder frames by their frame number to maintain proper order
+    private fun reorderFramesByNumber() {
+        if (tourKeyframes.size <= 1) return
+
+        // Sort by frame number
+        val sortedFrames = tourKeyframes.sortedBy { it.frameNumber }
+
+        // Clear and add back in sorted order
+        tourKeyframes.clear()
+        tourKeyframes.addAll(sortedFrames)
     }
 
     fun removeKeyframe(id: String) {
-        tourKeyframes.removeAll { it.id == id }
+        val index = tourKeyframes.indexOfFirst { it.id == id }
+        if (index != -1) {
+            val removedFrame = tourKeyframes[index]
+            tourKeyframes.removeAt(index)
+
+            // After removal, we could optionally renumber frames
+            renumberAllFrames()
+
+        }
     }
 
     fun goToKeyframe(keyframe: TourKeyframe) {
@@ -225,17 +283,63 @@ class MainViewModel {
         mustRepaint = true
     }
 
-    /*
-    fun updateKeyframe(keyframeId: String, newName: String? = null) {
-        val index = tourKeyframes.indexOfFirst { it.id == keyframeId }
-        if (index != -1) {
-            val old = tourKeyframes[index]
-            tourKeyframes[index] = old.copy(
-                name = newName ?: old.name
+     //Renumber all frames sequentially starting from 1
+    fun renumberAllFrames() {
+        if (tourKeyframes.isEmpty()) return
+
+        val updatedFrames = mutableListOf<TourKeyframe>()
+
+        // Sort frames by current frame number first
+        val sortedFrames = tourKeyframes.sortedBy { it.frameNumber }
+
+        // Renumber sequentially
+        for ((index, frame) in sortedFrames.withIndex()) {
+            val newFrameNumber = index + 1
+            updatedFrames.add(
+                frame.copy(
+                    name = if (frame.name.startsWith("Frame #")) {
+                        "Frame #$newFrameNumber"
+                    } else {
+                        "${frame.name} (#$newFrameNumber)"
+                    },
+                    frameNumber = newFrameNumber
+                )
             )
         }
+
+        // Update the list
+        tourKeyframes.clear()
+        tourKeyframes.addAll(updatedFrames)
+
+        // Update frame counter
+        frameCounter = updatedFrames.size + 1
     }
-     */
+
+    //Move a frame up in the list and renumber if needed
+    fun moveKeyframeUp(index: Int) {
+        if (index > 0) {
+            // Swap frames
+            val temp = tourKeyframes[index]
+            tourKeyframes[index] = tourKeyframes[index - 1]
+            tourKeyframes[index - 1] = temp
+
+            // Optionally renumber after moving
+            renumberAllFrames()
+        }
+    }
+
+    //Move a frame down in the list and renumber if needed
+    fun moveKeyframeDown(index: Int) {
+        if (index < tourKeyframes.size - 1) {
+            // Swap frames
+            val temp = tourKeyframes[index]
+            tourKeyframes[index] = tourKeyframes[index + 1]
+            tourKeyframes[index + 1] = temp
+
+            // Optionally renumber after moving
+            renumberAllFrames()
+        }
+    }
 
     fun startTour() {
         if (tourKeyframes.size < 2) return
@@ -299,7 +403,7 @@ class MainViewModel {
     }
 
     fun toggleTourControls() {
-        showTourControls = !showTourControls
+        showTourControls = !showTourControls && !isMenuOpened
     }
 
     private fun interpolateView(from: TourKeyframe, to: TourKeyframe, progress: Double) {

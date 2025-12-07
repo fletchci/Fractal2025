@@ -30,7 +30,7 @@ fun FractalMenu(
     Box(modifier = modifier) {
         // Кнопка меню
         Button(
-            onClick = { menuOpen = !menuOpen },
+            onClick = { menuOpen = !menuOpen; viewModel.isMenuOpened = !viewModel.isMenuOpened },
             enabled = !isShowingTourControls
             ) {
             Text(if (menuOpen) "Закрыть меню" else "Меню")
@@ -57,7 +57,7 @@ fun FractalMenu(
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     Button(
-                        onClick = { menuOpen = false },
+                        onClick = { menuOpen = false; viewModel.isMenuOpened = false },
                         modifier = Modifier.fillMaxWidth()
                     ) { Text("Закрыть меню") }
 
