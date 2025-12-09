@@ -68,112 +68,7 @@ fun StopIcon(
     }
 }
 
-@Composable
-fun TourControlPanel(
-    viewModel: MainViewModel,
-    modifier: Modifier = Modifier
-) {
-    Card(
-        modifier = modifier,
-        elevation = 8.dp,
-        backgroundColor = MaterialTheme.colors.surface.copy(alpha = 0.4f)
-    ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Icon(Icons.Default.Face, contentDescription = "Tour", tint= MaterialTheme.colors.primary)
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    "Animation",
-                    style = MaterialTheme.typography.h6,
-                    color = MaterialTheme.colors.primary
-                )
-            }
 
-            Divider(modifier = Modifier.padding(8.dp))
-
-            //
-            Text("Keyframes:", style = MaterialTheme.typography.subtitle1)
-            if (viewModel.tourKeyframes.isEmpty()) {
-                Text(
-                    "No keyframes",
-                    style = MaterialTheme.typography.caption,
-                    color = Color.Gray,
-                    modifier = Modifier.padding(vertical = 4.dp)
-                )
-            } else {
-                LazyColumn(
-                    modifier = Modifier
-                        .height(150.dp)
-                        .padding(vertical = 4.dp)
-                ) {
-                    items(viewModel.tourKeyframes.size) {index ->
-                        val keyframe = viewModel.tourKeyframes[index]
-                        keyframeItem(
-                            keyframe = keyframe,
-                            onGoto = { viewModel.goToKeyframe(keyframe) },
-                            onDelete = { viewModel.removeKeyframe(keyframe.id) },
-                            isPlaying = viewModel.isTourPlaying
-                        )
-                    }
-                }
-            }
-
-            // add keyframe button
-            Button(
-                onClick = { viewModel.addCurrentViewAsKeyframe()},
-                modifier = Modifier.fillMaxWidth(),
-                enabled = !viewModel.isTourPlaying
-            ) {
-                Icon(Icons.Default.Add, contentDescription = "Add")
-                Spacer(modifier = Modifier.width(8.dp))
-                Text("Add current view")
-            }
-            Divider(modifier = Modifier.padding(vertical = 8.dp))
-
-            // Tour controls
-            Row(
-                horizontalArrangement = Arrangement.SpaceEvenly,
-                modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)
-            ) {
-                Button(
-                    onClick = { viewModel.startTour() },
-                    enabled = viewModel.tourKeyframes.size > 1 && !viewModel.isTourPlaying,
-                    colors = ButtonDefaults.buttonColors(backgroundColor = Color.Green)
-                ) {
-                    Icon(Icons.Default.PlayArrow, contentDescription = "Start")
-                }
-
-                Button(
-                    onClick = { viewModel.stopTour() },
-                    enabled = viewModel.isTourPlaying,
-                    colors = ButtonDefaults.buttonColors(backgroundColor = Color.Red)
-                ) {
-                    //Icon(Icons.Default.Close, contentDescription = "Stop")
-                    StopIcon(modifier = Modifier, 18.dp)
-                }
-            }
-
-            // progress indicator
-            if (viewModel.isTourPlaying) {
-                LinearProgressIndicator(
-                    progress = viewModel.tourProgress,
-                    modifier = Modifier.fillMaxWidth(),
-                    color = MaterialTheme.colors.primary
-                )
-                Text(
-                    "Frame: ${viewModel.currentTourFrame}/${viewModel.totalTourFrames}",
-                    style = MaterialTheme.typography.caption,
-                    modifier = Modifier.align(Alignment.CenterHorizontally)
-                )
-            }
-            Divider(modifier = Modifier.padding(vertical = 8.dp))
-        }
-    }
-
-}
 
 @Composable
 fun keyframeItem(
@@ -213,9 +108,10 @@ fun keyframeItem(
                 Icon(
                     Icons.Default.LocationOn,
                     contentDescription = "Go to",
-                    tint = MaterialTheme.colors.primary
+                    tint = NeutralDark
                 )
             }
+
 
             IconButton(
                 onClick = onDelete,

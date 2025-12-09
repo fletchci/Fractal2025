@@ -32,6 +32,8 @@ import ru.gr05307.ui.TourControlPanel
 import ru.gr05307.viewmodels.AppViewModel
 import ru.gr05307.viewmodels.JuliaViewModel
 import ru.gr05307.viewmodels.MainViewModel
+val NeutralDark = Color(0xFF333333)
+
 
 
 @Composable
@@ -86,54 +88,47 @@ fun MainFractalView(
             onPan = viewModel::onPanning,
         )
 
-        // Кнопки сверху, абсолютно позиционированные
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp)
         ) {
-            // Меню слева
             FractalMenu(
                 viewModel = viewModel,
                 modifier = Modifier.align(Alignment.TopStart),
                 isShowingTourControls = viewModel.showTourControls
             )
-
-            // Кнопка Назад справа
-            Button(
-                onClick = { viewModel.performUndo() },
-                enabled = viewModel.canUndo(),
-                modifier = Modifier.align(Alignment.TopEnd)
-            ) {
-                Text("Назад")
-            }
         }
+
         // Tour control panel
         if (viewModel.showTourControls) {
             TourControlPanel(
                 viewModel = viewModel,
                 modifier = Modifier
                     .align(Alignment.TopEnd)
-                    .padding(16.dp)
+                    .padding(top = 100.dp, end = 16.dp) // сдвигаем вниз на 100.dp
                     .width(300.dp)
             )
         }
 
-        // Floating action button to show/hide tour controls
+
+        // Floating action button для показа/скрытия тур-контролей
         FloatingActionButton(
             onClick = { viewModel.toggleTourControls() },
             modifier = Modifier
                 .align(Alignment.BottomEnd)
                 .padding(16.dp),
-            backgroundColor = if (!viewModel.isMenuOpened) MaterialTheme.colors.primary else Color.Gray
+            backgroundColor = NeutralDark // Используем цвет гамбургера
         ) {
             Icon(
                 if (viewModel.showTourControls) Icons.Default.Close else Icons.Default.PlayArrow,
-                contentDescription = "Tour controls"
+                contentDescription = "Tour controls",
+                tint = Color.White // Белая иконка
             )
         }
     }
 }
+
 
 @Composable
 fun JuliaSidePanel(
@@ -180,6 +175,8 @@ fun JuliaSidePanel(
     }
 }
 
+val NaturalDark = Color(0xFF333333)
+
 @Composable
 fun PanelHeader(
     onClose: () -> Unit
@@ -187,7 +184,7 @@ fun PanelHeader(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .background(MaterialTheme.colors.primary)
+            .background(NaturalDark) // <- Natural Black
             .padding(horizontal = 16.dp, vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
